@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>c++内存分区模型 | M的博客</title><meta name="keywords" content="c++"><meta name="author" content="MDH"><meta name="copyright" content="MDH"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1 内存分区模型C++程序在执行时，将内存大方向划分为4个区域  代码区：存放函数体的二进制代码，由操作系统进行管理的 全局区：存放全局变量和静态变量以及常量 栈区：由编译器自动分配释放, 存放函数的参数值,局部变量等 堆区：由程序员分配和释放,若程序员不释放,程序结束时由操作系统回收  内存四区意义： 不同区域存放的数据，赋予不同的生命周期, 给我们更大的灵活编程 1.1 程序运行前​"><meta property="og:type" content="article"><meta property="og:title" content="c++内存分区模型"><meta property="og:url" content="https://cconfidence.github.io/archives/aa169648.html"><meta property="og:site_name" content="M的博客"><meta property="og:description" content="1 内存分区模型C++程序在执行时，将内存大方向划分为4个区域  代码区：存放函数体的二进制代码，由操作系统进行管理的 全局区：存放全局变量和静态变量以及常量 栈区：由编译器自动分配释放, 存放函数的参数值,局部变量等 堆区：由程序员分配和释放,若程序员不释放,程序结束时由操作系统回收  内存四区意义： 不同区域存放的数据，赋予不同的生命周期, 给我们更大的灵活编程 1.1 程序运行前​"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://cconfidence.github.io/img/2.png"><meta property="article:published_time" content="2022-08-22T09:19:15.893Z"><meta property="article:modified_time" content="2022-08-22T09:33:47.200Z"><meta property="article:author" content="MDH"><meta property="article:tag" content="c++"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://cconfidence.github.io/img/2.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://cconfidence.github.io/archives/aa169648"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//busuanzi.ibruce.info"><meta name="baidu-site-verification" content="code-qm7bCX3waC"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload='this.media="all"'><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload='this.media="all"'><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":50},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE={title:"c++内存分区模型",isPost:!0,isHome:!1,isHighlightShrink:!1,isToc:!0,postUpdate:"2022-08-22 17:33:47"}</script><noscript><style type="text/css">#nav{opacity:1}.justified-gallery img{opacity:1}#post-meta time,#recent-posts time{display:inline!important}</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/style.css"><meta name="generator" content="Hexo 5.4.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/./img/1.jpg" onerror='onerror=null,src="/img/friend_404.gif"' alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-list"></i> <span>链接</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i> <span>友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-heart"></i> <span>关于</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image:url(/./img/2.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">M的博客</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i> <span>搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i> <span>主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i> <span>时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i> <span>标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i> <span>分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-list"></i> <span>链接</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i> <span>友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-heart"></i> <span>关于</span></a></li></ul></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">c++内存分区模型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-08-22T09:19:15.893Z" title="发表于 2022-08-22 17:19:15">2022-08-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-08-22T09:33:47.200Z" title="更新于 2022-08-22 17:33:47">2022-08-22</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="c++内存分区模型"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><hr><h2 id="1-内存分区模型"><a href="#1-内存分区模型" class="headerlink" title="1 内存分区模型"></a>1 内存分区模型</h2><p>C++程序在执行时，将内存大方向划分为<strong>4个区域</strong></p><ul><li>代码区：存放函数体的二进制代码，由操作系统进行管理的</li><li>全局区：存放全局变量和静态变量以及常量</li><li>栈区：由编译器自动分配释放, 存放函数的参数值,局部变量等</li><li>堆区：由程序员分配和释放,若程序员不释放,程序结束时由操作系统回收</li></ul><p><strong>内存四区意义：</strong></p><p>不同区域存放的数据，赋予不同的生命周期, 给我们更大的灵活编程</p><h3 id="1-1-程序运行前"><a href="#1-1-程序运行前" class="headerlink" title="1.1 程序运行前"></a>1.1 程序运行前</h3><p>​ 在程序编译后，生成了exe可执行程序，<strong>未执行该程序前</strong>分为两个区域</p><p>​ <strong>代码区：</strong></p><p>​ 存放 CPU 执行的机器指令</p><p>​ 代码区是<strong>共享</strong>的，共享的目的是对于频繁被执行的程序，只需要在内存中有一份代码即可</p><p>​ 代码区是<strong>只读</strong>的，使其只读的原因是防止程序意外地修改了它的指令</p><p>​ <strong>全局区：</strong></p><p>​ 全局变量和静态变量存放在此.</p><p>​ 全局区还包含了常量区, 字符串常量和其他常量也存放在此.</p><p>​ ==该区域的数据在程序结束后由操作系统释放==</p><p><strong>示例</strong></p><p><code>//全局变量</code><br><code>int g_a = 10;</code><br><code>int g_b = 10;</code></p><p><code>//全局常量</code><br><code>const int c_g_a = 10;</code><br><code>const int c_g_b = 10;</code></p><p><code>int main() &#123;</code></p><p> <code>//局部变量</code><br> <code>int a = 10;</code><br> <code>int b = 10;</code></p><p> <code>//打印地址</code><br> <code>cout &lt;&lt; &quot;局部变量a地址为： &quot; &lt;&lt; (int)&amp;a &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;局部变量b地址为： &quot; &lt;&lt; (int)&amp;b &lt;&lt; endl;</code></p><p> <code>cout &lt;&lt; &quot;全局变量g_a地址为： &quot; &lt;&lt; (int)&amp;g_a &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;全局变量g_b地址为： &quot; &lt;&lt; (int)&amp;g_b &lt;&lt; endl;</code></p><p> <code>//静态变量</code><br> <code>static int s_a = 10;</code><br> <code>static int s_b = 10;</code></p><p> <code>cout &lt;&lt; &quot;静态变量s_a地址为： &quot; &lt;&lt; (int)&amp;s_a &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;静态变量s_b地址为： &quot; &lt;&lt; (int)&amp;s_b &lt;&lt; endl;</code></p><p> <code>cout &lt;&lt; &quot;字符串常量地址为： &quot; &lt;&lt; (int)&amp;&quot;hello world&quot; &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;字符串常量地址为： &quot; &lt;&lt; (int)&amp;&quot;hello world1&quot; &lt;&lt; endl;</code></p><p> <code>cout &lt;&lt; &quot;全局常量c_g_a地址为： &quot; &lt;&lt; (int)&amp;c_g_a &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;全局常量c_g_b地址为： &quot; &lt;&lt; (int)&amp;c_g_b &lt;&lt; endl;</code></p><p> <code>const int c_l_a = 10;</code><br> <code>const int c_l_b = 10;</code><br> <code>cout &lt;&lt; &quot;局部常量c_l_a地址为： &quot; &lt;&lt; (int)&amp;c_l_a &lt;&lt; endl;</code><br> <code>cout &lt;&lt; &quot;局部常量c_l_b地址为： &quot; &lt;&lt; (int)&amp;c_l_b &lt;&lt; endl;</code></p><p> <code>system(&quot;pause&quot;);</code></p><p> <code>return 0;</code><br><code>&#125;</code></p><p>总结：</p><ul><li>C++中在程序运行前分为全局区和代码区</li><li>代码区特点是共享和只读</li><li>全局区中存放全局变量、静态变量、常量</li><li>常量区中存放 const修饰的全局常量 和 字符串常量</li></ul><p><strong>栈区：</strong></p><p>​ 由编译器自动分配释放, 存放函数的参数值,局部变量等</p><p>​ 注意事项：不要返回局部变量的地址，栈区开辟的数据由编译器自动释放</p><p><strong>示例</strong></p><p><code>int * func()</code><br><code>&#123;</code><br> <code>int a = 10;</code><br> <code>return &amp;a;</code><br><code>&#125;</code></p><p><code>int main() &#123;</code></p><p> <code>int *p = func();</code></p><p> <code>cout &lt;&lt; *p &lt;&lt; endl;</code><br> <code>cout &lt;&lt; *p &lt;&lt; endl;</code></p><p> <code>system(&quot;pause&quot;);</code></p><p> <code>return 0;</code><br><code>&#125;</code></p><p><strong>堆区：</strong></p><p>​ 由程序员分配释放,若程序员不释放,程序结束时由操作系统回收</p><p>​ 在C++中主要利用new在堆区开辟内存</p><p><strong>示例：</strong></p><p><code>int* func()</code><br><code>&#123;</code><br> <code>int* a = new int(10);</code><br> <code>return a;</code><br><code>&#125;</code></p><p><code>int main() &#123;</code></p><p> <code>int *p = func();</code></p><p> <code>cout &lt;&lt; *p &lt;&lt; endl;</code><br> <code>cout &lt;&lt; *p &lt;&lt; endl;</code></p><p> <code>system(&quot;pause&quot;);</code></p><p> <code>return 0;</code><br><code>&#125;</code></p><p><strong>总结：</strong></p><p>堆区数据由程序员管理开辟和释放</p><p>堆区数据利用new关键字进行开辟内存</p><h3 id="1-3-new操作符"><a href="#1-3-new操作符" class="headerlink" title="1.3 new操作符"></a>1.3 new操作符</h3><p>​ C++中利用==new==操作符在堆区开辟数据</p><p>​ 堆区开辟的数据，由程序员手动开辟，手动释放，释放利用操作符 ==delete==</p><p>​ 语法： <code>new 数据类型</code></p><p>​ 利用new创建的数据，会返回该数据对应的类型的指针</p><p><strong>示例1： 基本语法</strong></p><p><code>int* func()</code><br><code>&#123;</code><br> <code>int* a = new int(10);</code><br> <code>return a;</code><br><code>&#125;</code></p><p><code>int main() &#123;</code></p><p> <code>int *p = func();</code></p><p> <code>cout &lt;&lt; *p &lt;&lt; endl;</code><br> <code>cout &lt;&lt; *p &lt;&lt; endl;</code></p><p> <code>//利用delete释放堆区数据</code><br> <code>delete p;</code></p><p> <code>//cout &lt;&lt; *p &lt;&lt; endl; //报错，释放的空间不可访问</code></p><p> <code>system(&quot;pause&quot;);</code></p><p> <code>return 0;</code><br><code>&#125;</code></p><p><strong>示例2：开辟数组</strong></p><p><code>//堆区开辟数组</code><br><code>int main() &#123;</code></p><p> <code>int* arr = new int[10];</code></p><p> <code>for (int i = 0; i &lt; 10; i++)</code><br> <code>&#123;</code><br> <code>arr[i] = i + 100;</code><br> <code>&#125;</code></p><p> <code>for (int i = 0; i &lt; 10; i++)</code><br> <code>&#123;</code><br> <code>cout &lt;&lt; arr[i] &lt;&lt; endl;</code><br> <code>&#125;</code><br> <code>//释放数组 delete 后加 []</code><br> <code>delete[] arr;</code></p><p> <code>system(&quot;pause&quot;);</code></p><p> <code>return 0;</code><br><code>&#125;</code></p></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者:</span> <span class="post-copyright-info"><a href="https://cconfidence.github.io">MDH</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接:</span> <span class="post-copyright-info"><a href="https://cconfidence.github.io/archives/aa169648.html">https://cconfidence.github.io/archives/aa169648.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明:</span> <span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://cconfidence.github.io" target="_blank">M的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/c/">c++</a></div><div class="post_share"><div class="social-share" data-image="/./img/2.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload='this.media="all"'><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝"></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/archives/16107.html"><img class="next-cover" src="/./img/2.png" onerror='onerror=null,src="/img/404.jpg"' alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hello World</div></div></a></div></nav><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i> <span>评论</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC81NzA5OS8zMzU2Mw=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/./img/1.jpg" onerror='this.onerror=null,this.src="/img/friend_404.gif"' alt="avatar"></div><div class="author-info__name">MDH</div><div class="author-info__description">一个学习的博客，欢迎访问</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%86%85%E5%AD%98%E5%88%86%E5%8C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">1 内存分区模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%A8%8B%E5%BA%8F%E8%BF%90%E8%A1%8C%E5%89%8D"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 程序运行前</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-new%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="toc-number">1.2.</span> <span class="toc-text">1.3 new操作符</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/archives/aa169648.html" title="c++内存分区模型"><img src="/./img/2.png" onerror='this.onerror=null,this.src="/img/404.jpg"' alt="c++内存分区模型"></a><div class="content"><a class="title" href="/archives/aa169648.html" title="c++内存分区模型">c++内存分区模型</a><time datetime="2022-08-22T09:19:15.893Z" title="发表于 2022-08-22 17:19:15">2022-08-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/archives/16107.html" title="Hello World"><img src="/./img/2.png" onerror='this.onerror=null,this.src="/img/404.jpg"' alt="Hello World"></a><div class="content"><a class="title" href="/archives/16107.html" title="Hello World">Hello World</a><time datetime="2022-08-21T02:16:46.153Z" title="发表于 2022-08-21 10:16:46">2022-08-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By MDH</div><div class="footer_custom_text"><div><a onclick='window.open("https://www.baidu.com")' class="footer-a">备123456</a></div><div>Hi, welcome to my blog !</div></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i> <span>数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadLivere(){var e,t,o,r;"object"==typeof LivereTower?window.LivereTower.init():(e=document,t="script",r=e.getElementsByTagName(t)[0],"function"!=typeof LivereTower&&((o=e.createElement(t)).src="https://cdn-city.livere.com/js/embed.dist.js",o.async=!0,r.parentNode.insertBefore(o,r)))}function loadOtherComment(){loadLivere()}loadLivere()</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zindex="-1" mobile="true" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
